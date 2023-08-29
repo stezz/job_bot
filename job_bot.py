@@ -20,6 +20,8 @@ def main():
     defaults = config["DEFAULT"]
     BASE_URL = defaults["base_url"]
     FIRST_PAGE = defaults["first_page"]
+    smtp_to = defaults['smtp_to']
+    smtp_to_user = defaults['smtp_to_user']
     url = BASE_URL + FIRST_PAGE
 
     results = get_page_data(url)
@@ -27,10 +29,10 @@ def main():
     message = ""
     if results:
         for k in results.keys():
-            message += "<b>{}</b> ({})<br>{}<br><br>".format(
-                results[k]["position"], k, results[k]["skills"]
+            message += "<b><a href=\"{}\">{}</a></b><br>{}<br><br>".format(
+                k, results[k]["position"], results[k]["skills"]
             )
-        send_email("stefano.mosconi@blackbelts.fi", message, defaults)
+        send_email(smtp_to_user, smtp_to, message, defaults)
     else:
         logger.info("No new jobs found")
 
@@ -89,7 +91,7 @@ def get_page_data(url):
     return joblist
 
 
-def send_email(to_addr, message, config):
+def send_email(to, to_user, message, config):
     defaults = config
     smtp_pwd = defaults["smtp_pwd"]
     smtp_user = defaults["smtp_user"]
@@ -101,7 +103,7 @@ def send_email(to_addr, message, config):
     server_str = smtp_server + ":" + str(smtp_port)
     server = EmailConnection(server_str, smtp_user, smtp_pwd)
 
-    to_addr = formataddr((smtp_from, smtp_user))
+    to_addr = formataddr((to, to_user))
     from_addr = formataddr((smtp_from, smtp_user))
     subject = "New jobs found"
     mail = Email(
@@ -112,7 +114,7 @@ def send_email(to_addr, message, config):
         message=message,
         message_encoding="utf-8",
     )
-    logger.info("Sending earning statements to {}".format(to_addr))
+    logger.info("Sending mail to {}".format(to_addr))
     server.send(mail)
     server.close()
 

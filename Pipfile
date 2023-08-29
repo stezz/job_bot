@@ -11,6 +11,7 @@ jinja2 = "*"
 
 [dev-packages]
 ipython = "*"
+pipfile = "*"
 
 [requires]
 python_version = "3.9"
